@@ -1,0 +1,19 @@
+# 忽略*.o和*.a文件
+ *.iml
+ local.properties
+# 忽略*.b和*.B文件，my.b除外
+# *.[bB]
+# !my.b
+# 忽略build文件和build目录
+build
+# 只忽略build目录，不忽略build文件
+# build/
+# 只忽略build文件，不忽略build目录
+# build
+# !build/
+# 只忽略当前目录下的build文件和目录，子目录的build不在忽略范围内
+# /build
+.gradle
+.idea
+*.iml
+app/app.iml
