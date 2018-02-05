@@ -2,13 +2,16 @@ package com.example.aidl_library;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.nfc.Tag;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.sourcelib.model.Book;
 
@@ -31,7 +34,6 @@ public class BookManagerService extends Service {
 
 
     public BookManagerService() {
-
     }
 
     @Override
@@ -52,6 +54,11 @@ public class BookManagerService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        int check = checkCallingOrSelfPermission("com.example.aidl_library.ACCESS_BOOK_SERVICE");
+        if (check == PackageManager.PERMISSION_DENIED) {
+            Toast.makeText(getApplicationContext(), "onBind:没有权限", Toast.LENGTH_SHORT).show();
+            return null;
+        }
         return new MyBinder();
     }
 
@@ -63,12 +70,32 @@ public class BookManagerService extends Service {
         }
 
         @Override
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+            int check = checkCallingOrSelfPermission("com.example.aidl_library.ACCESS_BOOK_SERVICE");
+            if (check == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(getApplicationContext(), "onTransact:没有权限", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            String[] packages = getPackageManager().getPackagesForUid(getCallingUid());
+            String packageName = null;
+            if (packages != null && packages.length > 0) {
+                packageName = packages[0];
+            }
+            if (!packageName.startsWith("com.example")) {
+                Toast.makeText(getApplicationContext(), "onTransact:没有权限22", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            return super.onTransact(code, data, reply, flags);
+        }
+
+        @Override
         public List<Book> getBookList() throws RemoteException {
             return mBookList;
         }
 
         @Override
         public void addBook(Book book) throws RemoteException {
+            System.out.println("添加成功");
             mBookList.add(book);
         }
 

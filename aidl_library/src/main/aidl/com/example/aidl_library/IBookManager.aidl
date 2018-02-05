@@ -15,6 +15,6 @@ interface IBookManager {
     List<Book> getBookList();
     void addBook(in Book book);
     void registerListener(in IOnNewBookArrivedListener listener);
-    void unRegisterListener(in IOnNewBookArrivedListener listener);
+    void unRegisterListener(IOnNewBookArrivedListener listener);
 
 }

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.aidl_library.BookManagerService;
 import com.example.aidl_library.IBookManager;
 import com.example.aidl_library.IOnNewBookArrivedListener;
 import com.example.sourcelib.model.Book;
@@ -54,11 +55,22 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Binder死亡的回调
+     */
+    IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient(){
+        @Override
+        public void binderDied() {
+
+        }
+    };
+
     private ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             bookManager = IBookManager.Stub.asInterface(service);
             try {
+                service.linkToDeath(mDeathRecipient, 0);// binder死亡回调
                 bookManager.addBook(new Book(3, "书籍"));
                 List<Book> list = bookManager.getBookList();
                 Log.i(TAG, "list type:" + list.getClass().getCanonicalName());
@@ -85,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         in.setClassName(this, "com.example.aidl_library.BookManagerService");
         in.setPackage("com.example.aidl_library");
         in.setAction("com.example.aidl_library.BookManagerService");
+
         bindService = bindService(in, conn, Context.BIND_AUTO_CREATE);
     }
 
