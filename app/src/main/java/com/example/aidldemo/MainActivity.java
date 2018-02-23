@@ -58,10 +58,16 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Binder死亡的回调
      */
-    IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient(){
+    IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
         @Override
         public void binderDied() {
+            if (bookManager == null)
+                return;
+            bookManager.asBinder().unlinkToDeath(this, 0);
+            bookManager = null;
 
+            // 重新绑定远程Services
+            bindService = bindService(in, conn, Context.BIND_AUTO_CREATE);
         }
     };
 
@@ -89,11 +95,12 @@ public class MainActivity extends AppCompatActivity {
             Log.d("bookManager::::::::", bookManager + "");
         }
     };
+    private Intent in;
 
     @Override
     protected void onStart() {
         super.onStart();
-        final Intent in = new Intent();
+        in = new Intent();
         in.setClassName(this, "com.example.aidl_library.BookManagerService");
         in.setPackage("com.example.aidl_library");
         in.setAction("com.example.aidl_library.BookManagerService");
